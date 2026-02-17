@@ -1,27 +1,39 @@
 pipeline {
-    agent { label 'NODE1_172.31.30.132' }
-    options {
-        timeout(time: 30, unit: 'HOURS') 
-    }
-    triggers {
-        { pollSCM('* * * * *') }
-    }
+    agent any
+
     tools {
-        jdk 'JDK_8'
+        jdk 'Java8'
+        maven 'Maven3'
+    }
+
+    options {
+        timeout(time: 5, unit: 'MINUTES')
+    }
+
+    parameters {
+        choice(
+            name: 'MAVEN_COMMAND',
+            choices: [
+                'mvn clean install',
+                'mvn jetty:run'
+            ],
+            description: 'Select Maven command'
+        )
     }
 
     stages {
-        stage ('vcs') {
-            steps{ 
-                git url: 'https://github.com/muthyalasaikiran/game-of-life.git',
+
+        stage('Checkout') {
+            steps {
+                git url: 'https://github.com/sohailsd888/game-of-life.git',
                     branch: 'master'
             }
         }
-        stage  ('package') {
+
+        stage('Build') {
             steps {
-                sh script: 'mvn package'
+                echo "maven_command: ${params.MAVEN_COMMAND}"
             }
         }
-        
     }
-}   
+}
